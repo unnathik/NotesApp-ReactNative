@@ -1,32 +1,63 @@
 import React, {useState} from 'react'
-import {StyleSheet, View} from 'react-native'
-import { Text, FAB } from 'react-native-paper'
+import {StyleSheet, View, FlatList} from 'react-native'
+import { Text, FAB, List } from 'react-native-paper'
 import AddNotes from './AddNotes'
 import Header from '../component/Header'
+import {useSelector, useDispatch} from 'react-redux'
+import {addnote, deletenote} from '../reducer/notesApp'
 
 function ViewNotes({navigation}){
-    const [notes, setNotes] = useState([])
+    // const [notes, setNotes] = useState([])
+    const notes = useSelector(state => state)
+    const dispatch = useDispatch()
 
-    const addNotes = note => {
-        note.id = notes.length +1
-        setNotes([...notes, note])
+    const addNote = note => {
+        console.log(notes)
+        dispatch(addnote(note))
     }
 
+    const deleteNote = id => {
+        dispatch(deletenote(id))
+    }
 
+    // const addNotes = note => {
+    //     note.id = notes.length +1
+    //     setNotes([...notes, note])
+    // }
 
     return(
         <>
         <Header titleText = 'Note Taking App'/>
         <View style = {styles.container}>
-            <View style = {styles.titleContainer}>
+            {notes.length === 0 ? (
+                <View style = {styles.titleContainer}>
                 <Text style = {styles.title}>You do not have any notes</Text>
-            </View>
+                </View>
+            ) : (
+                <FlatList
+                    data = {notes}
+                    renderItem = {({item}) => (
+                        <List.Item 
+                            title = {item.note.noteTitle}
+                            description = {item.note.noteDescription}
+                            descriptionNumberOfLines = {1}
+                            titleStyle = {styles.listTitle}
+                            onPress = {() => deleteNote(item.id)}
+                        />
+                    )} 
+                        keyExtractor = {item => item.id.toString()}
+                />
+            )}
+            
             <FAB
             style = {styles.fab}
             small
             icon = 'plus'
             label = 'Add New Note'
-            onPress = {() => navigation.navigate('AddNotes')}
+            onPress = {() => navigation.navigate('AddNotes', { 
+                addNote
+            })
+        }
             />
         </View>
         </>
@@ -54,6 +85,9 @@ const styles = StyleSheet.create({
         margin: 20,
         right: 0,
         bottom: 10
+    },
+    listTitle: {
+        fontSize: 20
     }
 })
 
